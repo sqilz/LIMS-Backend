@@ -24,7 +24,7 @@ from lims.inventory.views import (InventoryViewSet, SetViewSet, MeasureViewSet, 
 from lims.codonusage.views import CodonUsageTableViewSet
 from lims.projects.views import (ProjectViewSet, ProductViewSet, ProductStatusViewSet,
                                  ProjectStatusViewSet)
-from lims.workflows.views import (WorkflowViewSet, RunViewSet,
+from lims.workflows.views import (WorkflowViewSet, WorkflowImportView, RunViewSet,
                                   TaskViewSet, TaskFieldViewSet)
 
 from lims.filetemplate.views import FileTemplateViewSet
@@ -81,6 +81,7 @@ urlpatterns = [
     url(r'^crm/account/update/', CRMUpdateAccountView.as_view()),
     url(r'^crm/project/', CRMProjectView.as_view()),
     url(r'^crm/link/', CRMLinkView.as_view()),
+    url(r'^workflows/import/', WorkflowImportView.as_view()),
     url(r'^docs/', include('rest_framework_docs.urls')),
     url(r'^', include(router.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

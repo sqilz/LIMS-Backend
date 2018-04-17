@@ -591,6 +591,256 @@ class WorkflowTestCase(LoggedInTestCase):
         self.assertEqual(t[0]["name"], "TaskTempl1")
         self.assertEqual(t[1]["name"], "TaskTempl2")
 
+    def test_workflow_export(self):
+        self._asJoeBloggs()
+        response = self._client.get('/workflows/%d/export/' % self._workflow2.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_workflow_import(self):
+        self._asJoeBloggs()
+        data = {"name": "Test workflow",
+                "data": {
+                    "workflow":{
+                        "id":109,
+                        "name":"Workflow2",
+                        "order":"141,143,144",
+                        "date_created":"2018-04-03T14:15:28.218808Z",
+                    },
+                    "tasks":[
+                        {
+                            "id":144,
+                            "permissions":{
+
+                            },
+                            "created_by":"Joe Bloggs",
+                            "product_input":"ExampleStuff",
+                            "product_input_measure":"ml",
+                            "labware":"ExampleLabware",
+                            "labware_amount":1,
+                            "capable_equipment":[
+                                "Sequencer"
+                            ],
+                            "input_files":[
+                                "InputTemplate1"
+                            ],
+                            "output_files":[
+                                "InputTemplate2"
+                            ],
+                            "equipment_files":[
+
+                            ],
+                            "input_fields":[
+
+                            ],
+                            "variable_fields":[
+				{
+				    "id":11,
+				    "measure":None,
+				    "field_name":"tvc",
+				    "label":"TVC",
+				    "description":None,
+				    "amount":1.0,
+				    "measure_not_required":True,
+				    "template":27
+				},
+				{
+				    "id":9,
+				    "measure":None,
+				    "field_name":"tva",
+				    "label":"TVA",
+				    "description":None,
+				    "amount":2.0,
+				    "measure_not_required":True,
+				    "template":27
+				}
+
+                            ],
+                            "calculation_fields":[
+
+                            ],
+                            "output_fields":[
+
+                            ],
+                            "step_fields":[
+				{
+				    "id":7,
+				    "properties":[
+					{
+					    "id":11,
+					    "measure":"s",
+					    "amount":1.0,
+					    "label":"PropA",
+					    "from_calculation":False,
+					    "calculation_used":None,
+					    "measure_not_required":False,
+					    "field_name":"propa"
+					},
+					{
+					    "id":10,
+					    "measure":None,
+					    "amount":3.0,
+					    "label":"Prop3",
+					    "from_calculation":False,
+					    "calculation_used":None,
+					    "measure_not_required":True,
+					    "field_name":"prop3"
+					},
+					{
+					    "id":8,
+					    "measure":None,
+					    "amount":1.0,
+					    "label":"PropB",
+					    "from_calculation":False,
+					    "calculation_used":None,
+					    "measure_not_required":True,
+					    "field_name":"propb"
+					}
+				    ],
+				    "field_name":"Import Step",
+				    "label":"Import Step",
+				    "description":None,
+				    "template":27
+				}
+
+                            ],
+                            "store_labware_as":"labware_identifier",
+                            "name":"Import Task 1",
+                            "description":"Fourth",
+                            "product_input_not_required":False,
+                            "product_input_amount":1,
+                            "labware_not_required":False,
+                            "multiple_products_on_labware":False,
+                            "date_created":"2018-04-05T10:06:38.283575Z"
+                        },
+                        {
+                            "id":143,
+                            "permissions":{
+
+                            },
+                            "created_by":"Joe Bloggs",
+                            "product_input":"ExampleStuff",
+                            "product_input_measure":"ml",
+                            "labware":"ExampleLabware",
+                            "labware_amount":1,
+                            "capable_equipment":[
+                                "Sequencer"
+                            ],
+                            "input_files":[
+                                "InputTemplate1"
+                            ],
+                            "output_files":[
+                                "InputTemplate2"
+                            ],
+                            "equipment_files":[
+
+                            ],
+                            "input_fields":[
+
+                            ],
+                            "variable_fields":[
+
+                            ],
+                            "calculation_fields":[
+
+                            ],
+                            "output_fields":[
+
+                            ],
+                            "step_fields":[
+
+                            ],
+                            "store_labware_as":"labware_identifier",
+                            "name":"Import Task 2",
+                            "description":"Third",
+                            "product_input_not_required":False,
+                            "product_input_amount":1,
+                            "labware_not_required":False,
+                            "multiple_products_on_labware":False,
+                            "date_created":"2018-04-05T10:06:38.272883Z"
+                        },
+                        {
+                            "id":141,
+                            "permissions":{
+
+                            },
+                            "created_by":"Joe Bloggs",
+                            "product_input":"ExampleStuff",
+                            "product_input_measure":"ml",
+                            "labware":"ExampleLabware",
+                            "labware_amount":1,
+                            "capable_equipment":[
+                                "Sequencer"
+                            ],
+                            "input_files":[
+                                "InputTemplate1"
+                            ],
+                            "output_files":[
+                                "InputTemplate2"
+                            ],
+                            "equipment_files":[
+
+                            ],
+                            "input_fields":[
+
+                            ],
+                            "variable_fields":[
+
+                            ],
+                            "calculation_fields":[
+
+                            ],
+                            "output_fields":[
+
+                            ],
+                            "step_fields":[
+
+                            ],
+                            "store_labware_as":"labware_identifier",
+                            "name":"Import Task 3",
+                            "description":"First",
+                            "product_input_not_required":False,
+                            "product_input_amount":1,
+                            "labware_not_required":False,
+                            "multiple_products_on_labware":False,
+                            "date_created":"2018-04-05T10:06:38.251463Z"
+                        }
+                    ]
+                },
+                "assign_groups": {
+                    "joe_group": "rw",
+                    "jane_group": "rw"
+                }
+            }
+        response = self._client.post('/workflows/import/', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Workflow.objects.count(), 4)
+        self.assertIs(Workflow.objects.filter(name="Test workflow").exists(), True)
+        w = Workflow.objects.get(name="Test workflow")
+        self.assertEqual(w.created_by, self._joeBloggs)
+        self.assertEqual(len(w.get_tasks()), 3)
+        self.assertIs(TaskTemplate.objects.filter(name="Import Task 1").exists(), True)
+        t1 = TaskTemplate.objects.get(name="Import Task 1")
+        self.assertEqual(t1.variable_fields.count(), 2)
+        self.assertEqual(t1.step_fields.count(), 1)
+        step1 = StepFieldTemplate.objects.get(label="Import Step")
+        self.assertEqual(step1.properties.count(), 3)
+
+    def test_workflow_import_failed(self):
+        self._asJoeBloggs()
+        with open('lims/workflows/tests.workflow') as test_data:
+            data = {"name": "Test workflow fails",
+                    "data": {
+                    },
+                    "assign_groups": {
+                        "joe_group": "rw",
+                        "jane_group": "rw"
+                    }
+                }
+            data['data'] = json.loads(test_data.read())
+            response = self._client.post('/workflows/import/', data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(Workflow.objects.count(), 3)
+
 
 class TaskTestCase(LoggedInTestCase):
     def setUp(self):

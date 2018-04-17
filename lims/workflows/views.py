@@ -8,6 +8,7 @@ from pint import UnitRegistry, UndefinedUnitError
 from pyparsing import ParseException
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core import serializers as django_serializers
 
 from django.utils import timezone
 from guardian.shortcuts import get_group_perms
@@ -15,9 +16,10 @@ from guardian.shortcuts import get_group_perms
 import django_filters
 
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework import serializers
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.validators import ValidationError
 from rest_framework.filters import (OrderingFilter,
@@ -36,7 +38,12 @@ from lims.shared.mixins import StatsViewMixin, AuditTrailViewMixin
 from lims.filetemplate.models import FileTemplate
 from lims.inventory.models import (Item, ItemTransfer, AmountMeasure, Location,
                                    ItemType)
-from lims.inventory.serializers import ItemTransferPreviewSerializer
+from lims.filetemplate.models import FileTemplate
+from lims.filetemplate.serializers import FileTemplateSerializer  #noqa
+from lims.inventory.serializers import (ItemTransferPreviewSerializer,
+                                        AmountMeasureSerializer, #noqa
+                                        LocationSerializer,  #noqa
+                                        ItemTypeSerializer)  #noqa
 # Disable flake8 on this line as we need the templates to be imported but
 # they do not appear to be used (selected from globals)
 from .models import (Workflow,  # noqa
@@ -44,11 +51,14 @@ from .models import (Workflow,  # noqa
                      TaskTemplate, InputFieldTemplate, OutputFieldTemplate,  # noqa
                      StepFieldTemplate, VariableFieldTemplate,  # noqa
                      CalculationFieldTemplate)  # noqa
-from .serializers import (WorkflowSerializer, SimpleTaskTemplateSerializer,  # noqa
+from .serializers import (WorkflowSerializer, WorkflowExportSerializer,  # noqa
+                          WorkflowImportSerializer,  # noqa
+                          SimpleTaskTemplateSerializer,  # noqa
                           TaskTemplateSerializer,  # noqa
                           TaskTemplateNoProductInputSerializer,  # noqa
                           TaskValuesSerializer,  # noqa
                           TaskValuesNoProductInputSerializer,  # noqa
+                          TaskExportSerializer,  # noqa
                           RunSerializer,  # noqa
                           DetailedRunSerializer,  # noqa
                           InputFieldTemplateSerializer,  # noqa
@@ -58,6 +68,14 @@ from .serializers import (WorkflowSerializer, SimpleTaskTemplateSerializer,  # n
                           StepFieldTemplateSerializer,  # noqa
                           CalculationFieldTemplateSerializer,  # noqa
                           RecalculateTaskTemplateSerializer)  # noqa
+from .serializers import (
+                          InputFieldImportSerializer,  # noqa
+                          OutputFieldImportSerializer,  # noqa
+                          VariableFieldImportSerializer,  # noqa
+                          VariableFieldValueSerializer,  # noqa
+                          StepFieldImportSerializer,  # noqa
+                          CalculationFieldImportSerializer,  # noqa
+                          )
 from lims.datastore.models import DataEntry
 from lims.datastore.serializers import DataEntrySerializer
 from lims.equipment.models import Equipment
@@ -83,6 +101,26 @@ class WorkflowViewSet(AuditTrailViewMixin, ViewPermissionsMixin, viewsets.ModelV
         serializer, permissions = self.clean_serializer_of_permissions(serializer)
         instance = serializer.save(created_by=self.request.user)
         self.assign_permissions(instance, permissions)
+
+    @detail_route()
+    def export(self, request, pk=None):
+        obj = self.get_object()
+        serialized_workflow = WorkflowSerializer(obj)
+        # TODO: Strip user and perms data
+        tasks = TaskTemplate.objects.filter(id__in=obj.order.split(','))
+        serialized_tasks = TaskTemplateSerializer(tasks, many=True)
+        export_data = {}
+        # file templates, locations, measures, item types, equipment
+        for source in [FileTemplate, AmountMeasure, ItemType]:
+            results = source.objects.all()
+            serializer_name = '{}Serializer'.format(source._meta.label.split('.')[-1])
+            serializer_class = globals()[serializer_name]
+            serialized_source = serializer_class(results, many=True)
+            label_name = source._meta.label_lower.split('.')[-1]
+            export_data[label_name] = serialized_source.data
+        export_data['workflow'] = serialized_workflow.data
+        export_data['tasks'] = serialized_tasks.data
+        return Response(export_data)
 
     @detail_route()
     def tasks(self, request, pk=None):
@@ -120,6 +158,141 @@ class WorkflowViewSet(AuditTrailViewMixin, ViewPermissionsMixin, viewsets.ModelV
                 return Response({'message': 'Task does not exist'}, status=400)
             return Response(result)
         return Response({'message': 'Please provide a task position'}, status=400)
+
+
+class WorkflowImportView(ViewPermissionsMixin, APIView):
+    queryset = Workflow.objects.none()
+    permission_classes = (ExtendedObjectPermissions,)
+
+    def data_to_task(self, task_data):
+        # First check the task data is valid
+        serialized_task = TaskTemplateSerializer(data=task_data)
+        errors = {}
+        serialized_fields = []
+        try:
+            serialized_task.is_valid(raise_exception=True)
+        except:
+            new_errors = self.parse_errors(serialized_task.errors, serialized_task)
+            errors.update(new_errors)
+        # Iterate through fields and check all are valid
+        for field_type in ['Input', 'Output', 'Variable', 'Calculation', 'Step']:
+            serializer_name = field_type + 'FieldImportSerializer'
+            serializer_class = globals()[serializer_name]
+            for field in task_data[field_type.lower() + '_fields']:
+                field_id = field.pop('id', None)
+                field['template'] = None
+                if field_type == 'Step':
+                    for prop in field['properties']:
+                        prop.pop('id', None)
+                sf = serializer_class(data=field)
+                try:
+                    sf.is_valid(raise_exception=True)
+                except:
+                    new_errors = self.parse_errors(sf.errors, sf)
+                    errors.update(new_errors)
+                else:
+                    serialized_fields.append(sf)
+        return (serialized_task, serialized_fields, errors)
+
+    def parse_errors(self, errors, serializer):
+        # Iterate through dict and then error list
+        # Extract value of object
+        # Get field to lookup
+        # List off type of object needed
+        for field, error in errors.items():
+            if 'label' in serializer.data:
+                error_in = serializer.data['label']
+            else:
+                error_in = serializer.data['name']
+            for e in error:
+                if e.endswith('does not exist.'):
+                    stripped_message = e.lstrip('Object with ')
+                    lookup_name, s, v = stripped_message.partition('=')
+                    value = serializer.data[field]
+                    try:
+                        model = serializer.fields[field].queryset.model
+                    except:
+                        model = serializer.fields[field].child_relation.queryset.model
+                    model_name = model._meta.label_lower.split('.')[-1]
+                    # Now get the info from the initial data
+                    try:
+                        if type(value) != list:
+                            value = [value]
+                        new_items = []
+                        for v in value:
+                            search_data = self.request.data['data'][model_name]
+                            item_data = next((item for item in search_data
+                                              if item[lookup_name] == v))
+                            item_data['item_type'] = model._meta.label.split('.')[-1]
+                            new_items.append(item_data)
+                        errors[field] = {'error': error, 'items': new_items, 'error_in': error_in}
+                    except:
+                        errors[field] = {'error': error, 'error_in': error_in}
+                else:
+                    errors[field] = {'error': error, 'error_in': error_in}
+        return errors
+
+    def post(self, request, format=None):
+        is_check = request.data.get('check', False)
+        serializer = WorkflowImportSerializer(data=request.data)
+        hasErrors = False
+        errors = {}
+        if serializer.is_valid(raise_exception=True):
+            workflow_data = serializer.validated_data['data'].get('workflow', {})
+            workflow_id = workflow_data.pop('id', None)
+            workflow_data['name'] = serializer.data['name']
+            workflow_data['assign_groups'] = self.request.data.get('assign_groups', None)
+            workflow = WorkflowSerializer(data=workflow_data)
+            try:
+                workflow.is_valid(raise_exception=True)
+            except:
+                hasErrors = True
+                new_errors = self.parse_errors(workflow.errors, workflow)
+                errors.update(new_errors)
+            # convert task id's in order to list
+            order = workflow.validated_data['order'].split(',')
+            # Store a list of tasks and their original ID
+            task_mapping = {}
+            for task_data in serializer.validated_data['data'].get('tasks', []):
+                task_id = task_data.pop('id', None)
+                task_data['assign_groups'] = self.request.data.get('assign_groups', None)
+                serialized_task, serialized_fields, task_errors = self.data_to_task(task_data)
+                if len(task_errors.keys()) > 0:
+                    hasErrors = True
+                    errors.update(task_errors)
+                try:
+                    serialized_task.is_valid(raise_exception=True)
+                except:
+                    hasErrors = True
+                    new_errors = self.parse_errors(serialized_task.errors, serialized_task)
+                    errors.update(new_errors)
+                else:
+                    if not is_check:
+                        serialized_task, permissions = \
+                                self.clean_serializer_of_permissions(serialized_task)
+                        task_instance = serialized_task.save(created_by=self.request.user)
+                        self.assign_permissions(task_instance, permissions)
+                        task_mapping[task_id] = task_instance.id
+                        # And now the fields!!!
+                        for field in serialized_fields:
+                            field.validated_data['template'] = task_instance
+                            field.save()
+            if is_check:
+                issues = [{'field': k, 'issues': i} for k,i in errors.items()
+                          if 'items' not in i]
+                needed_items = [i['items'] for i in errors.values() if 'items' in i]
+                checks = {'issues': issues, 'required': needed_items}
+                return Response(checks, status=200)
+            if hasErrors:
+                return Response(errors, status=400)
+            # Replace the old ID with the new ID
+            new_order = [str(task_mapping[int(n)]) for n in order]
+            # Once complete replace order and save workflow
+            workflow, permissions = self.clean_serializer_of_permissions(workflow)
+            workflow.validated_data['order'] = ",".join(new_order)
+            workflow_instance = workflow.save(created_by=self.request.user)
+            self.assign_permissions(workflow_instance, permissions)
+        return Response(workflow.data, status=201)
 
 
 class RunFilterSet(django_filters.FilterSet):

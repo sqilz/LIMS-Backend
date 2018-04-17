@@ -11,7 +11,7 @@ from lims.filetemplate.models import FileTemplate
 @reversion.register()
 class Workflow(models.Model):
     name = models.CharField(max_length=50)
-    order = models.CommaSeparatedIntegerField(max_length=200, blank=True)
+    order = models.CharField(max_length=200, blank=True)
     created_by = models.ForeignKey(User)
     date_created = models.DateTimeField(auto_now_add=True)
 
@@ -169,7 +169,7 @@ class TaskTemplate(models.Model):
     # is attached to the Product
     product_input_not_required = models.BooleanField(default=False)
     product_input = models.ForeignKey(ItemType, related_name='product_input', null=True)
-    product_input_amount = models.IntegerField(null=True)
+    product_input_amount = models.IntegerField(null=True, default=0)
     product_input_measure = models.ForeignKey(AmountMeasure, null=True)
 
     labware_not_required = models.BooleanField(default=False)
