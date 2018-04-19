@@ -179,8 +179,16 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
             serializer_name = field_type + 'FieldImportSerializer'
             serializer_class = globals()[serializer_name]
             for field in task_data[field_type.lower() + '_fields']:
+                # We need the calculations to still have their ID as
+                # we can use this to swap them out later with the newly
+                # created one.
                 field_id = field.pop('id', None)
                 field['template'] = None
+                # calc_id = field.pop('calculation_used', None)
+                calc_id = None
+                if 'calculation_used' in field:
+                    calc_id = field['calculation_used']
+                    field['calculation_used'] = None
                 if field_type == 'Step':
                     for prop in field['properties']:
                         prop.pop('id', None)
@@ -191,6 +199,12 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
                     new_errors = self.parse_errors(sf.errors, sf)
                     errors.update(new_errors)
                 else:
+                    # Bypass the validation as the calculation doesn't exist
+                    # This ID will be swapped out later
+                    if calc_id:
+                        sf.validated_data['old_calculation_used'] = calc_id
+                    if field_type.lower() == 'calculation':
+                        sf.validated_data['id'] = field_id
                     serialized_fields.append(sf)
         return (serialized_task, serialized_fields, errors)
 
@@ -273,8 +287,23 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
                         task_instance = serialized_task.save(created_by=self.request.user)
                         self.assign_permissions(task_instance, permissions)
                         task_mapping[task_id] = task_instance.id
+                        # Handle saving + ID's of calculations
+                        calcs = {}
+                        for i, field in enumerate(serialized_fields):
+                            if type(field) == CalculationFieldImportSerializer:
+                                old_calc_id = field.validated_data.pop('id', None)
+                                field.validated_data['template'] = task_instance
+                                instance = field.save()
+                                calcs[old_calc_id] = instance
+                                serialized_fields.pop(i)
                         # And now the fields!!!
                         for field in serialized_fields:
+                            # Check if there's a calculation associate first
+                            if 'old_calculation_used' in field.validated_data:
+                                c = calcs.get(field.validated_data['old_calculation_used'], None)
+                                if c:
+                                    field.validated_data['calculation_used'] = c
+                                field.validated_data.pop('old_calculation_used', None)
                             field.validated_data['template'] = task_instance
                             field.save()
             if is_check:

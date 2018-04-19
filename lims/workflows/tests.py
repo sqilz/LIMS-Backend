@@ -630,7 +630,21 @@ class WorkflowTestCase(LoggedInTestCase):
 
                             ],
                             "input_fields":[
-
+                                {
+                                    "id":12,
+                                    "measure":"ul",
+                                    "lookup_type": self._prodinput.name,
+                                    "field_name":"media",
+                                    "store_value_in":"inventory_identifier",
+                                    "label":"Media",
+                                    "description": None,
+                                    "amount":50,
+                                    "auto_find_in_inventory": False,
+                                    "from_input_file": False,
+                                    "from_calculation": True,
+                                    "template":27,
+                                    "calculation_used": 10
+                                }
                             ],
                             "variable_fields":[
 				{
@@ -656,6 +670,15 @@ class WorkflowTestCase(LoggedInTestCase):
 
                             ],
                             "calculation_fields":[
+                                {
+                                    "id":10,
+                                    "field_name":"test_calc",
+                                    "label":"test calc",
+                                    "description": None,
+                                    "calculation":"1+1",
+                                    "result":2,
+                                    "template":27
+                                }
 
                             ],
                             "output_fields":[
@@ -822,6 +845,10 @@ class WorkflowTestCase(LoggedInTestCase):
         t1 = TaskTemplate.objects.get(name="Import Task 1")
         self.assertEqual(t1.variable_fields.count(), 2)
         self.assertEqual(t1.step_fields.count(), 1)
+        self.assertEqual(t1.calculation_fields.count(), 1)
+        self.assertEqual(t1.input_fields.count(), 1)
+        self.assertEqual(t1.input_fields.all()[0].calculation_used.id,
+                         t1.calculation_fields.all()[0].id)
         step1 = StepFieldTemplate.objects.get(label="Import Step")
         self.assertEqual(step1.properties.count(), 3)
 
