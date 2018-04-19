@@ -184,7 +184,8 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
                 # created one.
                 field_id = field.pop('id', None)
                 field['template'] = None
-                # calc_id = field.pop('calculation_used', None)
+                # Erase the calculation used as it doesn't exist
+                # but store the value to use to lookup
                 calc_id = None
                 if 'calculation_used' in field:
                     calc_id = field['calculation_used']
