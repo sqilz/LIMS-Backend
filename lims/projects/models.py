@@ -87,13 +87,15 @@ class Project(models.Model):
                 self.deadline_status = 'Past'
             elif self.warn_deadline():
                 self.deadline_status = 'Warn'
+            elif self.archive:
+                self.deadline_status = 'Complete'
             else:
                 self.deadline_status = 'On Schedule'
         self.project_identifier = self.create_project_identifier()
         super(Project, self).save(force_insert, force_update, **kwargs)
 
     def warn_deadline(self):
-        if self.deadline:
+        if self.deadline and not self.archive:
             now = timezone.now()
             warn_from = self.deadline - timedelta(days=self.deadline_warn)
             if now > warn_from:
@@ -101,7 +103,7 @@ class Project(models.Model):
         return False
 
     def past_deadline(self):
-        if self.deadline:
+        if self.deadline and not self.archive:
             now = timezone.now()
             diff = self.deadline - now
             if diff.days <= 0:
