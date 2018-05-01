@@ -220,15 +220,6 @@ LOGGING = {
 }
 
 #
-# Per webapp permissions
-#
-WEBAPP_STAFF_ONLY = {
-    'customerportal': False,
-    'EquipmentReservations': False,
-    'lims': True,
-}
-
-#
 # REST framework settings
 #
 REST_FRAMEWORK = {
