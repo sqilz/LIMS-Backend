@@ -81,6 +81,9 @@ class TriggerSet(models.Model):
                 if triggerset.alert_linked_user:
                     alerted_user = triggerset.value_from_path(instance,
                                                               triggerset.alert_user_field)
+                    alert.statuses.create(user=alerted_user,
+                                          status=TriggerAlertStatus.ACTIVE,
+                                          last_updated_by=alerted_user)
                     try:
                         email_recipients.append(alerted_user.email)
                     except:
