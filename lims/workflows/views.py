@@ -8,7 +8,6 @@ from pint import UnitRegistry, UndefinedUnitError
 from pyparsing import ParseException
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.core import serializers as django_serializers
 
 from django.utils import timezone
 from guardian.shortcuts import get_group_perms
@@ -19,7 +18,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework import serializers
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import detail_route
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.validators import ValidationError
 from rest_framework.filters import (OrderingFilter,
@@ -35,15 +34,14 @@ from lims.permissions.permissions import (ViewPermissionsMixin,
                                           ExtendedObjectPermissionsFilter)
 
 from lims.shared.mixins import StatsViewMixin, AuditTrailViewMixin
-from lims.filetemplate.models import FileTemplate
 from lims.inventory.models import (Item, ItemTransfer, AmountMeasure, Location,
                                    ItemType)
 from lims.filetemplate.models import FileTemplate
-from lims.filetemplate.serializers import FileTemplateSerializer  #noqa
-from lims.inventory.serializers import (ItemTransferPreviewSerializer,
-                                        AmountMeasureSerializer, #noqa
-                                        LocationSerializer,  #noqa
-                                        ItemTypeSerializer)  #noqa
+from lims.filetemplate.serializers import FileTemplateSerializer  # noqa
+from lims.inventory.serializers import (ItemTransferPreviewSerializer,  # noqa
+                                        AmountMeasureSerializer,  # noqa
+                                        LocationSerializer,  # noqa
+                                        ItemTypeSerializer)  # noqa
 # Disable flake8 on this line as we need the templates to be imported but
 # they do not appear to be used (selected from globals)
 from .models import (Workflow,  # noqa
@@ -68,14 +66,14 @@ from .serializers import (WorkflowSerializer, WorkflowExportSerializer,  # noqa
                           StepFieldTemplateSerializer,  # noqa
                           CalculationFieldTemplateSerializer,  # noqa
                           RecalculateTaskTemplateSerializer)  # noqa
-from .serializers import (
+from .serializers import (  # noqa
                           InputFieldImportSerializer,  # noqa
                           OutputFieldImportSerializer,  # noqa
                           VariableFieldImportSerializer,  # noqa
                           VariableFieldValueSerializer,  # noqa
                           StepFieldImportSerializer,  # noqa
                           CalculationFieldImportSerializer,  # noqa
-                          )
+                          )  # noqa
 from lims.datastore.models import DataEntry
 from lims.datastore.serializers import DataEntrySerializer
 from lims.equipment.models import Equipment
@@ -254,7 +252,7 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
         errors = {}
         if serializer.is_valid(raise_exception=True):
             workflow_data = serializer.validated_data['data'].get('workflow', {})
-            workflow_id = workflow_data.pop('id', None)
+            workflow_data.pop('id', None)
             workflow_data['name'] = serializer.data['name']
             workflow_data['assign_groups'] = self.request.data.get('assign_groups', None)
             workflow = WorkflowSerializer(data=workflow_data)
@@ -308,7 +306,7 @@ class WorkflowImportView(ViewPermissionsMixin, APIView):
                             field.validated_data['template'] = task_instance
                             field.save()
             if is_check:
-                issues = [{'field': k, 'issues': i} for k,i in errors.items()
+                issues = [{'field': k, 'issues': i} for k, i in errors.items()
                           if 'items' not in i]
                 needed_items = [i['items'] for i in errors.values() if 'items' in i]
                 checks = {'issues': issues, 'required': needed_items}
