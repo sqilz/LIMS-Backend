@@ -10,18 +10,18 @@ class LoggedInTestCase(TestCase):
         self._client = APIClient()
 
         self._joeBloggs = User.objects.create_user(username='Joe Bloggs',
-                                                   email='joe@tgac.com', password='top_secret')
+                                                   email='joe@example.test', password='top_secret')
         self._joeBloggs.groups.add(Group.objects.create(name="joe_group"))
         self._janeDoe = User.objects.create_user(username='Jane Doe',
-                                                 email='jane@tgac.com', password='widget')
+                                                 email='jane@example.test', password='widget')
         self._janeDoe.groups.add(Group.objects.create(name="jane_group"))
         self._adminUser = User.objects.create_user(username='Super Man',
-                                                   email='superman@tgac.com', password='woggle')
+                                                   email='superman@example.test', password='woggle')
         self._adminUser.groups.add(Group.objects.get(name="admin"))
         # Admin users are also staff for the purposes of permissions.
         self._adminUser.groups.add(Group.objects.get(name="staff"))
         self._staffUser = User.objects.create_user(username='Lab Tech',
-                                                   email='labtech@tgac.com', password='wiggle')
+                                                   email='labtech@example.test', password='wiggle')
         self._staffUser.groups.add(Group.objects.get(name="staff"))
 
     # Utility function to switch user. Joe is a normal user in group joe_group

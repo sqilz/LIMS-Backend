@@ -53,6 +53,11 @@ class TriggerSet(models.Model):
         models.TextField(blank=False, null=False,
                          default='{name}: {model} instance {instance} triggered on {date}.')
 
+    # Send an alert to a user associated with the model
+    alert_linked_user = models.BooleanField(default=False)
+    # The field to use to find the user account
+    alert_user_field = models.CharField(null=True, blank=True, max_length=200)
+
     class Meta:
         ordering = ['-id']
 
@@ -69,8 +74,17 @@ class TriggerSet(models.Model):
                     alert.statuses.create(user=subscription.user,
                                           status=TriggerAlertStatus.ACTIVE,
                                           last_updated_by=subscription.user)
+                    # Check if subscribed OR use email from linked user
                     if subscription.email:
                         email_recipients.append(subscription.user.email)
+                # This uses a string, traversal by __ is supported.
+                if triggerset.alert_linked_user:
+                    alerted_user = triggerset.value_from_path(instance,
+                                                              triggerset.alert_user_field)
+                    try:
+                        email_recipients.append(alerted_user.email)
+                    except:
+                        pass
                 alert.save()
                 if len(email_recipients) > 0:
                     content = triggerset._complete_email_template(instance, alert.fired)
@@ -80,6 +94,16 @@ class TriggerSet(models.Model):
                         'recipients': email_recipients,
                     }
                     Channel('send-email').send(message)
+
+    def value_from_path(self, model, path):
+        value = model
+        split_path = path.split('__')
+        for p in split_path:
+            try:
+                value = getattr(value, p)
+            except:
+                return None
+        return value
 
     def all_triggers_fire(self, instance=None, created=False):
         for trigger in self.triggers.all():
@@ -95,8 +119,16 @@ class TriggerSet(models.Model):
             "name": self.name,
             "date": fired.strftime("%Y-%m-%d %H:%M:%S")
         }
+        # Get field names of the instance and allow for replace as {instance.<field_name>}
+        for fi in instance._meta.get_fields():
+            if fi.many_to_many is False and not fi.auto_created or fi.concrete:
+                r_name = "instance.{}".format(fi.name)
+                try:
+                    replace_fields[r_name] = getattr(instance, fi.name)
+                except:
+                    pass
         for field, value in replace_fields.items():
-            content = content.replace('{{{}}}'.format(field), repr(value))
+            content = content.replace('{{{}}}'.format(field), '{}'.format(value))
         return content
 
 
