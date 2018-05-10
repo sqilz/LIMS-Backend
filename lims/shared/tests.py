@@ -702,5 +702,4 @@ class TriggerTestCase(LoggedInTestCase):
         self._janeDoeTriggerSet.save()
         self._asJaneDoe()
         self._fire_alerts()
-        jane_alert_id = self._janeDoeTriggerSet.alerts.all()
         self.assertEqual(self._janeDoeTriggerSet.alerts.count(), 2)
