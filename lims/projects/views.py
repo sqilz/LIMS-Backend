@@ -29,7 +29,7 @@ from .serializers import (ProjectSerializer, ProductSerializer,
                           ProjectStatusSerializer, FullProductSerializer)
 from .parsers import DesignFileParser
 
-from .providers import ProductPluginProvider
+from .providers import ProductPluginProvider, ProjectPluginProvider
 
 
 class ProjectViewSet(AuditTrailViewMixin, ViewPermissionsMixin, StatsViewMixin,
@@ -51,10 +51,26 @@ class ProjectViewSet(AuditTrailViewMixin, ViewPermissionsMixin, StatsViewMixin,
                      'crm_project__account__user__first_name',
                      'crm_project__account__user__last_name',)
 
+    def get_object(self):
+        instance = super().get_object()
+        plugins = [p(instance) for p in ProjectPluginProvider.plugins]
+        for p in plugins:
+            p.view()
+        return instance
+
     def perform_create(self, serializer):
         serializer, permissions = self.clean_serializer_of_permissions(serializer)
         instance = serializer.save(created_by=self.request.user)
         self.assign_permissions(instance, permissions)
+        plugins = [p(instance) for p in ProjectPluginProvider.plugins]
+        for p in plugins:
+            p.create()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        plugins = [p(instance) for p in ProjectPluginProvider.plugins]
+        for p in plugins:
+            p.update()
 
     @detail_route(methods=['PATCH'])
     def update_deadline(self, request, pk=None):

@@ -6,19 +6,19 @@ class ProjectPluginProvider(object, metaclass=PluginMountPoint):
     def __init__(self, item, *args, **kwargs):
         self.item = item
 
-    def create():
+    def create(self):
         """
         Stub function: called on the creation of an item.
         """
         pass
 
-    def update():
+    def update(self):
         """
         Stub function: called when an item is updated.
         """
         pass
 
-    def view():
+    def view(self):
         """
         Stub function: called when an item is viewed.
         """
@@ -30,19 +30,19 @@ class ProductPluginProvider(object, metaclass=PluginMountPoint):
     def __init__(self, item, *args, **kwargs):
         self.item = item
 
-    def create():
+    def create(self):
         """
         Stub function: called on the creation of an item.
         """
         pass
 
-    def update():
+    def update(self):
         """
         Stub function: called when an item is updated.
         """
         pass
 
-    def view():
+    def view(self):
         """
         Stub function: called when an item is viewed.
         """

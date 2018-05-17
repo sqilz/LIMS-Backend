@@ -29,6 +29,14 @@ class WorkflowSerializer(SerializerPermissionsMixin, serializers.ModelSerializer
         fields = '__all__'
 
 
+class WorkflowExportSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Workflow
+        fields = '__all__'
+        depth = 5
+
+
 class InputFieldTemplateSerializer(serializers.ModelSerializer):
     measure = serializers.SlugRelatedField(
         queryset=AmountMeasure.objects.all(),
@@ -44,6 +52,12 @@ class InputFieldTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = InputFieldTemplate
         fields = '__all__'
+
+
+class InputFieldImportSerializer(InputFieldTemplateSerializer):
+    class Meta:
+        model = InputFieldTemplate
+        exclude = ('template', 'id')
 
 
 class InputFieldValueSerializer(serializers.Serializer):
@@ -77,6 +91,12 @@ class VariableFieldTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class VariableFieldImportSerializer(VariableFieldTemplateSerializer):
+    class Meta:
+        model = VariableFieldTemplate
+        exclude = ('template', 'id')
+
+
 class VariableFieldValueSerializer(serializers.Serializer):
     """
     Serializes the values from an input field
@@ -102,7 +122,12 @@ class OutputFieldTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OutputFieldTemplate
         fields = '__all__'
-        fields = '__all__'
+
+
+class OutputFieldImportSerializer(OutputFieldTemplateSerializer):
+    class Meta:
+        model = OutputFieldTemplate
+        exclude = ('template', 'id')
 
 
 class OutputFieldValueSerializer(serializers.Serializer):
@@ -122,7 +147,12 @@ class CalculationFieldTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalculationFieldTemplate
         fields = '__all__'
-        fields = '__all__'
+
+
+class CalculationFieldImportSerializer(CalculationFieldTemplateSerializer):
+    class Meta:
+        model = CalculationFieldTemplate
+        exclude = ('template', 'id')
 
 
 class CalculationFieldIDTemplateSerializer(CalculationFieldTemplateSerializer):
@@ -155,6 +185,12 @@ class StepFieldPropertySerializer(serializers.ModelSerializer):
         model = StepFieldProperty
         fields = ('id', 'measure', 'amount', 'label',
                   'from_calculation', 'calculation_used', 'measure_not_required', 'field_name',)
+
+
+class StepFieldPropertyImportSerializer(StepFieldPropertySerializer):
+    class Meta:
+        model = StepFieldProperty
+        exclude = ('template', 'id')
 
 
 class StepFieldPropertyValueSerializer(serializers.Serializer):
@@ -208,6 +244,12 @@ class StepFieldTemplateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class StepFieldImportSerializer(StepFieldTemplateSerializer):
+    class Meta:
+        model = StepFieldTemplate
+        exclude = ('template', 'id')
+
+
 class StepFieldValueSerializer(serializers.Serializer):
     label = serializers.CharField()
     description = serializers.CharField(required=False, allow_null=True)
@@ -221,12 +263,15 @@ class TaskTemplateSerializer(SerializerPermissionsMixin, serializers.ModelSerial
     )
     product_input = serializers.SlugRelatedField(
         queryset=ItemType.objects.all(),
-        slug_field='name'
+        slug_field='name',
+        allow_null=True,
     )
     product_input_measure = serializers.SlugRelatedField(
         queryset=AmountMeasure.objects.all(),
-        slug_field='symbol'
+        slug_field='symbol',
+        allow_null=True,
     )
+    product_input_amount = serializers.FloatField(allow_null=True)
     labware = serializers.SlugRelatedField(
         required=False,
         allow_null=True,
@@ -396,6 +441,24 @@ class TaskValuesNoProductInputSerializer(TaskValuesSerializer):
     product_input = serializers.CharField(required=False, allow_null=True)
     product_input_amount = serializers.FloatField(required=False, allow_null=True)
     product_input_measure = serializers.CharField(required=False, allow_null=True)
+
+
+class TaskExportSerializer(serializers.ModelSerializer):
+    input_fields = InputFieldTemplateSerializer(read_only=True, many=True)
+    variable_fields = VariableFieldTemplateSerializer(read_only=True, many=True)
+    calculation_fields = CalculationFieldTemplateSerializer(read_only=True, many=True)
+    output_fields = OutputFieldTemplateSerializer(read_only=True, many=True)
+    step_fields = StepFieldTemplateSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = TaskTemplate
+        fields = '__all__'
+        depth = 10
+
+
+class WorkflowImportSerializer(SerializerPermissionsMixin, serializers.Serializer):
+    name = serializers.CharField()
+    data = serializers.JSONField()
 
 
 class RunSerializer(SerializerPermissionsMixin, serializers.ModelSerializer):

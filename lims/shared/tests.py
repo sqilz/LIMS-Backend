@@ -127,10 +127,12 @@ class TriggerTestCase(LoggedInTestCase):
                                    postcode="IP1 1AA",
                                    country="UK",
                                    user=self._janeDoe)
+        email_template = '{name}: {model} instance {instance} triggered on {date}. The institute name is {instance.institution_name}.'  # noqa
         self._joeBloggsTriggerSet = \
             TriggerSet.objects.create(model="Address",
                                       severity=TriggerSet.LOW,
-                                      name="Joe's Trigger")
+                                      name="Joe's Trigger",
+                                      email_template=email_template)
         self._joeBloggsTrigger = \
             Trigger.objects.create(triggerset=self._joeBloggsTriggerSet,
                                    field="city",
@@ -484,12 +486,14 @@ class TriggerTestCase(LoggedInTestCase):
     def test_subscription_email_template(self):
         fired = datetime.datetime.now()
         text = self._joeBloggsTriggerSet._complete_email_template(self._joeBloggsAddress, fired)
-        self.assertEqual(text, "%s: %s instance %s triggered on %s." % (
-            repr(self._joeBloggsTriggerSet.name),
-            repr(self._joeBloggsTriggerSet.model),
-            repr(self._joeBloggsAddress.id),
-            repr(fired.strftime("%Y-%m-%d %H:%M:%S"))
-        ))
+        match_string = '{}: {} instance {} triggered on {}. The institute name is {}.'.format(
+            self._joeBloggsTriggerSet.name,
+            self._joeBloggsTriggerSet.model,
+            self._joeBloggsAddress.id,
+            fired.strftime("%Y-%m-%d %H:%M:%S"),
+            self._joeBloggsAddress.institution_name,
+        )
+        self.assertEqual(text, match_string)
 
     def test_access_alerts_anonymous(self):
         self._asAnonymous()
@@ -691,3 +695,11 @@ class TriggerTestCase(LoggedInTestCase):
                          TriggerAlertStatus.ACTIVE)
         self.assertEqual(TriggerAlertStatus.objects.get(id=jane_alert_status.id).status,
                          TriggerAlertStatus.ACTIVE)
+
+    def test_alert_linked_user(self):
+        self._janeDoeTriggerSet.alert_linked_user = True
+        self._janeDoeTriggerSet.alert_user_field = 'user'
+        self._janeDoeTriggerSet.save()
+        self._asJaneDoe()
+        self._fire_alerts()
+        self.assertEqual(self._janeDoeTriggerSet.alerts.count(), 2)

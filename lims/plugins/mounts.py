@@ -33,7 +33,8 @@ def list_plugins():
     for pd in PLUGIN_DIRECTORIES:
         try:
             for d in os.scandir('./lims/plugins/'+pd):
-                if not d.name.startswith('__') and (d.name.endswith('.py') or d.is_dir()):
+                if (not d.name.startswith('__') and not d.name.startswith('.')
+                        and (d.name.endswith('.py') or d.is_dir())):
                     without_ext = d.name.rsplit('.', 1)
                     modules.append((pd, without_ext[0]))
         except:
@@ -46,7 +47,10 @@ def load_plugins(**kwargs):
     plugins_to_load = list_plugins()
     for plugin in plugins_to_load:
         path = plugin_path.format(dir=plugin[0], module=plugin[1])
-        importlib.import_module(path)
+        try:
+            importlib.import_module(path)
+        except:
+            pass
 
 
 class ExamplePluginProvider:
