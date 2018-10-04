@@ -26,7 +26,7 @@ class UserTestCase(LoggedInTestCase):
     def test_presets(self):
         self.assertIs(User.objects.filter(username="Joe Bloggs").exists(), True)
         user1 = User.objects.get(username="Joe Bloggs")
-        self.assertEqual(user1.email, "joe@tgac.com")
+        self.assertEqual(user1.email, "joe@example.test")
         self.assertEqual(user1.first_name, "Joe")
         self.assertEqual(user1.last_name, "Bloggs")
         self.assertEqual(user1.addresses.count(), 1)
@@ -35,7 +35,7 @@ class UserTestCase(LoggedInTestCase):
         self.assertEqual(user1.groups.all()[0], Group.objects.get(name="joe_group"))
         self.assertIs(User.objects.filter(username="Jane Doe").exists(), True)
         user1 = User.objects.get(username="Jane Doe")
-        self.assertEqual(user1.email, "jane@tgac.com")
+        self.assertEqual(user1.email, "jane@example.test")
         self.assertEqual(User.objects.count(), 5)  # 4 presets plus default Anonymous user
 
     def test_access_anonymous(self):
@@ -68,7 +68,7 @@ class UserTestCase(LoggedInTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         user1 = response.data
         self.assertEqual(user1["username"], "Joe Bloggs")
-        self.assertEqual(user1["email"], "joe@tgac.com")
+        self.assertEqual(user1["email"], "joe@example.test")
         self.assertEqual(user1["first_name"], "Joe")
         self.assertEqual(user1["last_name"], "Bloggs")
         addresses = user1["addresses"]
@@ -99,7 +99,7 @@ class UserTestCase(LoggedInTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         user1 = response.data
         self.assertEqual(user1["username"], "Joe Bloggs")
-        self.assertEqual(user1["email"], "joe@tgac.com")
+        self.assertEqual(user1["email"], "joe@example.test")
         self.assertEqual(user1["first_name"], "Joe")
         self.assertEqual(user1["last_name"], "Bloggs")
         addresses = user1["addresses"]
@@ -168,7 +168,7 @@ class UserTestCase(LoggedInTestCase):
         # Users cannot see other user so this is a 404
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         user1 = User.objects.get(username="Jane Doe")
-        self.assertEqual(user1.email, "jane@tgac.com")
+        self.assertEqual(user1.email, "jane@example.test")
 
     def test_admin_edit_any(self):
         self._asAdmin()

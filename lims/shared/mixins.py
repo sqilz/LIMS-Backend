@@ -22,9 +22,14 @@ class StatsViewMixin(viewsets.ViewSet):
         Query a field for stats on contents
         """
         field = request.query_params.get('field', None)
+        exclude = request.query_params.get('exclude', None)
 
         if field:
             qs = self.get_queryset()
+            try:
+                qs = qs.exclude(**{exclude: True})
+            except:
+                pass
             try:
                 counts = qs.values(field).annotate(Count(field)).order_by()
             except FieldError:
