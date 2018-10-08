@@ -161,7 +161,7 @@ class Product(models.Model):
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
-    location = models.ForeignKey(Location, null=True)
+
 
     # TODO: Ability to add "design" from CAD tool to Product
 
@@ -173,7 +173,7 @@ class Product(models.Model):
     last_modified_on = models.DateTimeField(auto_now=True)
 
     project = models.ForeignKey(Project)
-
+    location = models.ForeignKey(Location)
 
     #
     # DEPRECIATION WARNING: THESE ARE TO BE MOVED TO PROPERTIES JSON1G
