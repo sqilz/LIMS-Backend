@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import JSONField
 
 
 from lims.shared.models import Organism
-from lims.inventory.models import ItemType, Item
+from lims.inventory.models import ItemType, Item, Location
 from lims.crm.models import CRMProject
 from lims.datastore.models import Attachment
 
@@ -172,6 +172,7 @@ class Product(models.Model):
     last_modified_on = models.DateTimeField(auto_now=True)
 
     project = models.ForeignKey(Project)
+    location = models.ForeignKey(Location)
 
     #
     # DEPRECIATION WARNING: THESE ARE TO BE MOVED TO PROPERTIES JSON1G
