@@ -85,10 +85,9 @@ class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSer
         queryset=ProductStatus.objects.all(),
         slug_field='name',
     )
-    location = serializers.SlugRelatedField(
-        queryset=Location.objects.all(),
-        slug_field='name',
-    )
+
+    location = serializers.SlugRelatedField(queryset=Location.objects.all(),
+                                            slug_field='code')
     optimised_for = serializers.SlugRelatedField(
         required=False,
         allow_null=True,
