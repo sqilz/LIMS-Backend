@@ -60,12 +60,16 @@ class SimpleProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.Mo
         queryset=ItemType.objects.all(),
         slug_field='name',
     )
+    product_location = serializers.SlugRelatedField(
+        queryset=Location.objects.all(),
+        slug_field='name',
+    )
     linked_inventory = LinkedItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = ['id', 'product_identifier', 'runs', 'on_run', 'product_type', 'name',
-                  'linked_inventory']
+                  'linked_inventory', 'product_locaton']
 
 
 class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSerializer):
@@ -85,9 +89,10 @@ class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSer
         queryset=ProductStatus.objects.all(),
         slug_field='name',
     )
-
-    location = serializers.SlugRelatedField(queryset=Location.objects.all(),
-                                            slug_field='name')
+    location = serializers.SlugRelatedField(
+        queryset=Location.objects.all(),
+        slug_field='name'
+    )
     optimised_for = serializers.SlugRelatedField(
         required=False,
         allow_null=True,
