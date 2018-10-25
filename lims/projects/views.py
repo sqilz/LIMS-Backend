@@ -180,7 +180,6 @@ class ProductFilter(django_filters.FilterSet):
             'project': ['exact'],
             'status': ['exact'],
             'on_run': ['exact'],
-            'location': ['exact'],
         }
 
 
@@ -194,7 +193,7 @@ class ProductViewSet(AuditTrailViewMixin, ViewPermissionsMixin, StatsViewMixin,
     permission_classes = (ExtendedObjectPermissions,)
     filter_backends = (SearchFilter, DjangoFilterBackend,
                        OrderingFilter, ExtendedObjectPermissionsFilter,)
-    search_fields = ('product_identifier', 'name', 'product_type__name', 'status__name','product_location__name')
+    search_fields = ('product_identifier', 'name', 'product_type__name', 'status__name',)
     filter_class = ProductFilter
 
     def get_serializer_class(self):

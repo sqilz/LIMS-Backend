@@ -13,7 +13,7 @@ from lims.shared.models import Organism
 from lims.inventory.models import ItemType, Item, Location
 from lims.crm.models import CRMProject
 from lims.datastore.models import Attachment
-from mptt.models import MPTTModel, TreeForeignKey
+
 
 @reversion.register()
 class ProjectStatus(models.Model):
@@ -161,7 +161,6 @@ class Product(models.Model):
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
-    location = models.ForeignKey(Location, null=True)
 
     # TODO: Ability to add "design" from CAD tool to Product
 
@@ -173,7 +172,6 @@ class Product(models.Model):
     last_modified_on = models.DateTimeField(auto_now=True)
 
     project = models.ForeignKey(Project)
-
 
     #
     # DEPRECIATION WARNING: THESE ARE TO BE MOVED TO PROPERTIES JSON1G
