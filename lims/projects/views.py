@@ -194,7 +194,7 @@ class ProductViewSet(AuditTrailViewMixin, ViewPermissionsMixin, StatsViewMixin,
     permission_classes = (ExtendedObjectPermissions,)
     filter_backends = (SearchFilter, DjangoFilterBackend,
                        OrderingFilter, ExtendedObjectPermissionsFilter,)
-    search_fields = ('product_identifier', 'name', 'product_type__name', 'status__name','product_location__name')
+    search_fields = ('product_identifier', 'name', 'product_type__name', 'status__name','product_location_identifier','product_location__name')
     filter_class = ProductFilter
 
     def get_serializer_class(self):

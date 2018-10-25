@@ -161,12 +161,13 @@ class Product(models.Model):
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
-    location = models.ForeignKey(Location, null=True)
+    product_location = models.ForeignKey(Location, null=True)
 
     # TODO: Ability to add "design" from CAD tool to Product
 
     # A project prefixed (e.g. GM1-1) version of the identifier
     product_identifier = models.CharField(default='', max_length=20, db_index=True)
+    product_location = models.CharField(default='', max_length=20,db_index=True)
 
     created_by = models.ForeignKey(User, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
