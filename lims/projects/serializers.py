@@ -54,6 +54,7 @@ class ProjectSerializer(SerializerPermissionsMixin, serializers.ModelSerializer)
 
 class SimpleProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSerializer):
     product_identifier = serializers.CharField(read_only=True)
+    product_location_identifier = serializers.CharField(read_only=True)
     runs = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     on_run = serializers.BooleanField(read_only=True)
     product_type = serializers.SlugRelatedField(
@@ -68,13 +69,15 @@ class SimpleProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.Mo
 
     class Meta:
         model = Product
-        fields = ['id', 'product_identifier', 'runs', 'on_run', 'product_type', 'name',
+        fields = ['id', 'product_identifier','product_location_identifier', 'runs', 'on_run', 'product_type', 'name',
                   'linked_inventory', 'product_locaton']
 
 
 class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSerializer):
     identifier = serializers.CharField(read_only=True)
     product_identifier = serializers.CharField(read_only=True)
+    product_location_identifier = serializers.CharField(read_only=True)
+    product_location = serializers.CharField(read_only=True)
     runs = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     on_run = serializers.BooleanField(read_only=True)
     created_by = serializers.SlugRelatedField(

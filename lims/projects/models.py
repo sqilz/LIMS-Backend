@@ -167,6 +167,7 @@ class Product(models.Model):
 
     # A project prefixed (e.g. GM1-1) version of the identifier
     product_identifier = models.CharField(default='', max_length=20, db_index=True)
+    product_location = models.CharField(default='', max_length=20,db_index=True)
 
     created_by = models.ForeignKey(User, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
