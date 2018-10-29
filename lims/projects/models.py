@@ -114,6 +114,7 @@ class Project(models.Model):
         return self.name
 
 
+
 @reversion.register()
 class DeadlineExtension(models.Model):
     project = models.ForeignKey(Project, related_name='deadline_extensions')
@@ -144,6 +145,36 @@ class ProductStatus(models.Model):
         return self.name
 
 
+@reversion.register
+class Container(models.Model):
+    description = models.CharField(max_length=45)
+    def __str__(self):
+        return self.name
+
+@reversion.register()
+class StudyGroup(models.Model):
+    group_identifier = models.CharField(max_length=45)
+    study = models.ForeignKey(Project)
+
+    def __str__(self):
+        return self.name
+
+@reversion.register
+class Animal(models.Model):
+    name = models.CharField(max_length=45)
+    description = models.TextField()
+    species = models.PositiveIntegerField(default=0)
+    gender = models.PositiveIntegerField(default=0)
+    # TODO one-to many to study_group
+    study_group = models.ForeignKey(StudyGroup)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self):
+        return self.name
+
+
 @reversion.register()
 class Product(models.Model):
     """
@@ -162,6 +193,14 @@ class Product(models.Model):
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
     location = models.ForeignKey(Location, null=True)
+    animal_id = models.ForeignKey(Animal, blank=True, null=True)
+    animal = models.IntegerField(default=0)
+    container = models.ForeignKey(Container, blank=True, null=True)
+    unstained = models.IntegerField(default=0)
+    storing_conditions = models.IntegerField(default=0)
+    barcode = models.CharField(max_length=45, default='')
+    protocol = models.CharField(max_length=45, default='')
+
 
     # TODO: Ability to add "design" from CAD tool to Product
 
@@ -262,4 +301,25 @@ class WorkLog(models.Model):
 
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
+
+@reversion.register()
+class Experiment(models.Model):
+    experiment_type = models.IntegerField()
+    name = models.CharField(max_length=45)
+    description = models.TextField(max_length=45)
+    result = models.TextField(max_length=500)
+    value = models.CharField(max_length=45)
+    img = models.CharField(max_length=45)
+
+    sample = models.ForeignKey(Product)
+
+    created_by = models.ForeignKey(User, limit_choices_to={'is_staff': True})
+    start_time = models.DateTimeField(blank=True, null=True)
+    finish_time = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self):
+        return self.product.name
 

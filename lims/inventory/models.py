@@ -332,3 +332,5 @@ def initItemTransfer(**kwargs):
         instance.amount_available = instance.amount_taken
         instance.amount_to_take = instance.amount_taken
 post_init.connect(initItemTransfer, ItemTransfer)
+
+
