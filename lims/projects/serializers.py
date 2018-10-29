@@ -9,7 +9,7 @@ from lims.permissions.permissions import (SerializerPermissionsMixin,
                                           SerializerReadOnlyPermissionsMixin)
 from lims.shared.models import Organism
 from .models import (Project, ProjectStatus, Product, ProductStatus, Comment, WorkLog,
-                     DeadlineExtension)
+                     DeadlineExtension, Location)
 from lims.datastore.serializers import (CompactDataEntrySerializer, AttachmentSerializer,
                                         DataEntrySerializer)
 
@@ -60,12 +60,16 @@ class SimpleProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.Mo
         queryset=ItemType.objects.all(),
         slug_field='name',
     )
+    location = serializers.SlugRelatedField(
+        queryset=Location.objects.all(),
+        slug_field='name',
+    )
     linked_inventory = LinkedItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = ['id', 'product_identifier', 'runs', 'on_run', 'product_type', 'name',
-                  'linked_inventory']
+                  'linked_inventory', 'product_locaton']
 
 
 class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSerializer):
@@ -84,6 +88,10 @@ class ProductSerializer(SerializerReadOnlyPermissionsMixin, serializers.ModelSer
     status = serializers.SlugRelatedField(
         queryset=ProductStatus.objects.all(),
         slug_field='name',
+    )
+    location = serializers.SlugRelatedField(
+        queryset=Location.objects.all(),
+        slug_field='name'
     )
     optimised_for = serializers.SlugRelatedField(
         required=False,

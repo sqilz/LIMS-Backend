@@ -10,10 +10,10 @@ from django.contrib.postgres.fields import JSONField
 
 
 from lims.shared.models import Organism
-from lims.inventory.models import ItemType, Item
+from lims.inventory.models import ItemType, Item, Location
 from lims.crm.models import CRMProject
 from lims.datastore.models import Attachment
-
+from mptt.models import MPTTModel, TreeForeignKey
 
 @reversion.register()
 class ProjectStatus(models.Model):
@@ -156,11 +156,12 @@ class Product(models.Model):
     )
 
     identifier = models.IntegerField(default=0)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=255)
     status = models.ForeignKey(ProductStatus)
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
+    location = models.ForeignKey(Location, null=True)
 
     # TODO: Ability to add "design" from CAD tool to Product
 
@@ -172,6 +173,7 @@ class Product(models.Model):
     last_modified_on = models.DateTimeField(auto_now=True)
 
     project = models.ForeignKey(Project)
+
 
     #
     # DEPRECIATION WARNING: THESE ARE TO BE MOVED TO PROPERTIES JSON1G
@@ -260,3 +262,4 @@ class WorkLog(models.Model):
 
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
+

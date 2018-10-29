@@ -32,7 +32,7 @@ DEBUG = os.environ.get('DEBUG', True)
 import requests
 allowed_host=requests.get("http://ipecho.net/plain?").text
 
-ALLOWED_HOSTS = [allowed_host, os.environ.get('DOMAIN', 'localhost')]
+ALLOWED_HOSTS = [allowed_host,'10.255.223.56', os.environ.get('DOMAIN', 'localhost')]
 
 
 # Application definition
@@ -123,8 +123,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'lims'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'USER': os.environ.get('DB_USER', 'limsadmin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'lims'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', 5432)
     }

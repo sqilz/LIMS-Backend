@@ -1,0 +1,14 @@
+#!/bin/bash
+export DB_NAME lims
+
+export SALESFORCE_USERNAME='<salesforce_username>'
+export SALESFORCE_PASSWORD='<salesforce_password>'
+export SALESFORCE_TOKEN='<salesforce_token>'
+
+export PROJECT_IDENTIFIER_PREFIX='p'
+export PROJECT_IDENTIFIER_START=100
+
+export LISTEN_HOST=0.0.0.0
+export LISTEN_PORT=8000
+
+env/bin/python manage.py runserver $LISTEN_HOST:$LISTEN_PORT
