@@ -38,7 +38,7 @@ class Project(models.Model):
     """
     A project is a container for products and contains key identifiying information
     """
-    def create_identifier(self):
+    def create_identifier():
         """
         Create an identifier for the project based on the last ID, starting from given value
         """
