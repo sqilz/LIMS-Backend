@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import JSONField
 
 
 from lims.shared.models import Organism
-from lims.inventory.models import ItemType, Item, Location
+from lims.inventory.models import ItemType, Item, Location, Animal
 from lims.crm.models import CRMProject
 from lims.datastore.models import Attachment
 from mptt.models import MPTTModel, TreeForeignKey
@@ -38,7 +38,7 @@ class Project(models.Model):
     """
     A project is a container for products and contains key identifiying information
     """
-    def create_identifier():
+    def create_identifier(self):
         """
         Create an identifier for the project based on the last ID, starting from given value
         """
@@ -114,6 +114,7 @@ class Project(models.Model):
         return self.name
 
 
+
 @reversion.register()
 class DeadlineExtension(models.Model):
     project = models.ForeignKey(Project, related_name='deadline_extensions')
@@ -144,6 +145,13 @@ class ProductStatus(models.Model):
         return self.name
 
 
+@reversion.register
+class Container(models.Model):
+    description = models.CharField(max_length=45)
+    def __str__(self):
+        return self.name
+
+
 @reversion.register()
 class Product(models.Model):
     """
@@ -162,6 +170,14 @@ class Product(models.Model):
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
     location = models.ForeignKey(Location, null=True)
+    animalid = models.ForeignKey(Animal)
+    animal = models.IntegerField(default=0)
+    container = models.ForeignKey(Container)
+    unstained = models.IntegerField(default=0)
+    storing_conditions = models.IntegerField(default=0)
+    barcode = models.CharField(max_length=45)
+    protocol = models.CharField(max_length=45)
+
 
     # TODO: Ability to add "design" from CAD tool to Product
 
@@ -263,3 +279,29 @@ class WorkLog(models.Model):
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
 
+
+@reversion.register()
+class StudyGroup(models.Model):
+    group_identifier = models.CharField(max_length=45)
+    study = models.ForeignKey(Project)
+
+    def __str__(self):
+        return self.name
+
+@reversion.register()
+class Experiment(models.Model):
+    experiment_type = models.IntegerField()
+    name = models.CharField(max_length=45)
+    description = models.TextField(max_length=45)
+    result = models.TextField(max_length=500)
+    value = models.CharField(max_length=45)
+    img = models.CharField(max_length=45)
+
+    sample = models.ForeignKey(Product)
+
+    created_by = models.ForeignKey(User, limit_choices_to={'is_staff': True})
+    start_time = models.DateTimeField(blank=True, null=True)
+    finish_time = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.product.name
