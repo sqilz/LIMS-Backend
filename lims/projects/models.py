@@ -157,7 +157,7 @@ class StudyGroup(models.Model):
     study = models.ForeignKey(Project)
 
     def __str__(self):
-        return self.name
+        return self.project.name
 
 @reversion.register
 class Animal(models.Model):
