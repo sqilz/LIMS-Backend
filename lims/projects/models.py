@@ -154,10 +154,13 @@ class Container(models.Model):
 @reversion.register()
 class StudyGroup(models.Model):
     group_identifier = models.CharField(max_length=45)
-    study = models.ForeignKey(Project)
+    study = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.project.name
+        return self.group_identifier
+
+    class Meta:
+        ordering = ('group_identifier',)
 
 @reversion.register
 class Animal(models.Model):
