@@ -156,7 +156,7 @@ class Product(models.Model):
     )
 
     identifier = models.IntegerField(default=0)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=255)
     status = models.ForeignKey(ProductStatus)
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
@@ -262,3 +262,4 @@ class WorkLog(models.Model):
 
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
+
