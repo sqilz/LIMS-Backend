@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models.signals import post_init
 import reversion
 from django.contrib.auth.models import User
-from lims.projects.models import StudyGroup
 
 from mptt.models import MPTTModel, TreeForeignKey
 from pint import UnitRegistry, UndefinedUnitError
@@ -334,19 +333,4 @@ def initItemTransfer(**kwargs):
         instance.amount_to_take = instance.amount_taken
 post_init.connect(initItemTransfer, ItemTransfer)
 
-
-@reversion.register
-class Animal(models.Model):
-    name = models.CharField(max_length=45)
-    description = models.TextField()
-    species = models.PositiveIntegerField(default=0)
-    gender = models.PositiveIntegerField(default=0)
-    #TODO one-to many to study_group
-    study_group = models.ForeignKey(StudyGroup)
-
-    class Meta:
-        ordering = ['-id']
-
-    def __str__(self):
-        return self.name
 
