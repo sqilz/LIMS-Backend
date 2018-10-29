@@ -151,6 +151,29 @@ class Container(models.Model):
     def __str__(self):
         return self.name
 
+@reversion.register()
+class StudyGroup(models.Model):
+    group_identifier = models.CharField(max_length=45)
+    study = models.ForeignKey(Project)
+
+    def __str__(self):
+        return self.name
+
+@reversion.register
+class Animal(models.Model):
+    name = models.CharField(max_length=45)
+    description = models.TextField()
+    species = models.PositiveIntegerField(default=0)
+    gender = models.PositiveIntegerField(default=0)
+    # TODO one-to many to study_group
+    study_group = models.ForeignKey(StudyGroup)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self):
+        return self.name
+
 
 @reversion.register()
 class Product(models.Model):
@@ -279,15 +302,6 @@ class WorkLog(models.Model):
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
 
-
-@reversion.register()
-class StudyGroup(models.Model):
-    group_identifier = models.CharField(max_length=45)
-    study = models.ForeignKey(Project)
-
-    def __str__(self):
-        return self.name
-
 @reversion.register()
 class Experiment(models.Model):
     experiment_type = models.IntegerField()
@@ -308,19 +322,4 @@ class Experiment(models.Model):
 
     def __str__(self):
         return self.product.name
-
-@reversion.register
-class Animal(models.Model):
-    name = models.CharField(max_length=45)
-    description = models.TextField()
-    species = models.PositiveIntegerField(default=0)
-    gender = models.PositiveIntegerField(default=0)
-    # TODO one-to many to study_group
-    study_group = models.ForeignKey(StudyGroup)
-
-    class Meta:
-        ordering = ['-id']
-
-    def __str__(self):
-        return self.name
 
