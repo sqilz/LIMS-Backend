@@ -199,7 +199,7 @@ class Product(models.Model):
     animal_id = models.ForeignKey(Animal, blank=True, null=True)
     animal = models.IntegerField(default=0)
     container = models.ForeignKey(Container, blank=True, null=True)
-    unstained = models.IntegerField(default=0)
+    unstained = models.BooleanField(default=0)
     storing_conditions = models.IntegerField(default=0)
     barcode = models.CharField(max_length=45, default='')
     protocol = models.CharField(max_length=45, default='')
