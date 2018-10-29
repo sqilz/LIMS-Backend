@@ -198,7 +198,7 @@ class Product(models.Model):
     container = models.ForeignKey(Container)
     unstained = models.IntegerField(default=0)
     storing_conditions = models.IntegerField(default=0)
-    barcode = models.CharField(max_length=45)
+    barcode = models.CharField(max_length=45, default='')
     protocol = models.CharField(max_length=45)
 
 
