@@ -195,11 +195,11 @@ class Product(models.Model):
     location = models.ForeignKey(Location, null=True)
     animal_id = models.ForeignKey(Animal, blank=True, null=True)
     animal = models.IntegerField(default=0)
-    container = models.ForeignKey(Container)
+    container = models.ForeignKey(Container, blank=True, null=True)
     unstained = models.IntegerField(default=0)
     storing_conditions = models.IntegerField(default=0)
     barcode = models.CharField(max_length=45, default='')
-    protocol = models.CharField(max_length=45)
+    protocol = models.CharField(max_length=45, default='')
 
 
     # TODO: Ability to add "design" from CAD tool to Product
