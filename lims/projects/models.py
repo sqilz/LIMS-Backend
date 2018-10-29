@@ -193,7 +193,7 @@ class Product(models.Model):
     product_type = models.ForeignKey(ItemType)
     optimised_for = models.ForeignKey(Organism, blank=True, null=True)
     location = models.ForeignKey(Location, null=True)
-    animalid = models.ForeignKey(Animal)
+    animal_id = models.ForeignKey(Animal, blank=True, null=True)
     animal = models.IntegerField(default=0)
     container = models.ForeignKey(Container)
     unstained = models.IntegerField(default=0)
