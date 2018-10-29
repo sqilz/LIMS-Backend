@@ -149,7 +149,7 @@ class ProductStatus(models.Model):
 class Container(models.Model):
     description = models.CharField(max_length=45)
     def __str__(self):
-        return self.name
+        return self.description
 
 @reversion.register()
 class StudyGroup(models.Model):
