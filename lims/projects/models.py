@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import JSONField
 
 
 from lims.shared.models import Organism
-from lims.inventory.models import ItemType, Item, Location, Animal
+from lims.inventory.models import ItemType, Item, Location
 from lims.crm.models import CRMProject
 from lims.datastore.models import Attachment
 from mptt.models import MPTTModel, TreeForeignKey
