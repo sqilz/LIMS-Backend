@@ -324,5 +324,5 @@ class Experiment(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.product.name
+        return self.name
 
