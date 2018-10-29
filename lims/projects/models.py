@@ -156,7 +156,7 @@ class Product(models.Model):
     )
 
     identifier = models.IntegerField(default=0)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=255)
     status = models.ForeignKey(ProductStatus)
     flag_issue = models.BooleanField(default=False)
     product_type = models.ForeignKey(ItemType)
@@ -167,7 +167,6 @@ class Product(models.Model):
 
     # A project prefixed (e.g. GM1-1) version of the identifier
     product_identifier = models.CharField(default='', max_length=20, db_index=True)
-    product_location = models.CharField(default='', max_length=20,db_index=True)
 
     created_by = models.ForeignKey(User, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -263,3 +262,4 @@ class WorkLog(models.Model):
 
     def __str__(self):
         return '{}: {} ({})'.format(self.project, self.task, self.user.username)
+
