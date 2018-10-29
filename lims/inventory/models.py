@@ -344,6 +344,9 @@ class Animal(models.Model):
     #TODO one-to many to study_group
     study_group = models.ForeignKey(StudyGroup)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return self.name
 
